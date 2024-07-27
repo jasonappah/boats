@@ -1,21 +1,11 @@
 import { createRootRoute, Link, LinkProps, Outlet } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/router-devtools'
 import {
-  Bell,
-  CircleUser,
   Menu,
   Ship,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { clsx } from 'clsx'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import dynamicIconImports from 'lucide-react/dynamicIconImports';
 import { lazy, Suspense } from 'react'
@@ -31,10 +21,6 @@ export const Route = createRootRoute({
                 <Ship className="h-6 w-6" />
                 <span className="">Boats</span>
               </a>
-              <Button variant="outline" size="icon" className="ml-auto h-8 w-8">
-                <Bell className="h-4 w-4" />
-                <span className="sr-only">Toggle notifications</span>
-              </Button>
             </div>
             <div className="flex-1">
               <NavItems/>
