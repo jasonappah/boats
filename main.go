@@ -6,6 +6,8 @@ import (
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
+	"github.com/pocketbase/pocketbase/cmd"
+	"boats/lib"
 )
 
 //go:embed all:frontend/dist
@@ -14,6 +16,16 @@ var assets embed.FS
 func main() {
 	// Create an instance of the app structure
 	app := NewApp()
+	
+	pocketBaseApp := lib.InitPocketbase(true)
+	pocketBaseApp.Bootstrap()
+	serveCmd := cmd.NewServeCommand(pocketBaseApp, true)
+
+	go func() {
+		serveCmd.Execute()
+		// TODO: need to figure out how to gracefully shutdown the server on wails shutdown
+	}()
+
 
 	// Create application with options
 	err := wails.Run(&options.App{
@@ -23,7 +35,6 @@ func main() {
 		AssetServer: &assetserver.Options{
 			Assets: assets,
 		},
-		BackgroundColour: &options.RGBA{R: 27, G: 38, B: 54, A: 1},
 		OnStartup:        app.startup,
 		Bind: []interface{}{
 			app,
