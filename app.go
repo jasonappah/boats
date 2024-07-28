@@ -23,16 +23,14 @@ func NewApp() *App {
 	return &App{}
 }
 
-// startup is called when the app starts. The context is saved
-// so we can call the runtime methods
-func (a *App) startup(ctx context.Context) {
+func (a *App) Startup(ctx context.Context) {
 	a.ctx = ctx
 
 	a.pocketbase = lib.InitPocketbase(true)
 	a.pocketbase.Bootstrap()
-
+	serveCmd := cmd.NewServeCommand(a.pocketbase, true)
+	
 	go func() {
-		serveCmd := cmd.NewServeCommand(a.pocketbase, true)
 		serveCmd.Execute()
 	}()
 }
@@ -60,7 +58,7 @@ func (a *App) FetchScholarshipHTML() error {
 	urls := []ScholarshipURL{}
 
 	err := a.pocketbase.Dao().DB().
-		NewQuery("SELECT * FROM scholarship_urls EXCEPT SELECT * FROM scholarship_urls JOIN scholarship_html ON scholarship_urls.id = scholarship_html.scholarship_id").All(&urls)
+		NewQuery("SELECT scholarship_urls.* FROM scholarship_urls EXCEPT SELECT scholarship_urls.* FROM scholarship_urls JOIN scholarship_html ON scholarship_urls.id = scholarship_html.scholarship_id").All(&urls)
 
 	if err != nil {
 		println(err.Error())
@@ -85,10 +83,10 @@ func (a *App) FetchScholarshipHTML() error {
 
 		// TODO: later we can use a html parser to extract the needed text to save space and make prompts smaller too. we can also minify the html - we should keep it as html so that we still have knowledge of text hierarchy
 		_, err = a.pocketbase.Dao().DB().
-			NewQuery("UPDATE scholarship_html SET html = {:body} WHERE scholarship_id = {:scholarshipId}").Bind(dbx.Params{
-			"body":          string(body),
-			"scholarshipId": url.Id,
-		}).Execute()
+			NewQuery("INSERT INTO scholarship_html (scholarship_id, html) VALUES ({:scholarshipId}, {:body})").Bind(dbx.Params{
+				"scholarshipId": url.Id,
+				"body":          string(body),
+			}).Execute()
 
 		if err != nil {
 			println(err.Error())
